@@ -1,5 +1,7 @@
 *.temp
 *.out
+*.swp
 ConvolutionalNN/pickle/*
 ConvolutionalNN/data/*
 ConvolutionalNN/models/*
+

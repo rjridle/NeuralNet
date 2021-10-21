@@ -15,23 +15,29 @@ TESTING_DIR = CWD + "/data/dogs-vs-cats/test1"
 PICKLE_DIR = CWD + "/pickle"
 MODELS_DIR = CWD + "/models"
 IMG_SIZE = 200
+ACTIVATION = "relu"
+OPTIMIZER = "adam"
+BATCH_SIZE = 64
+EPOCHS = 5
+VALIDATION_SPLIT = 0.1
+
 
 def main():
 
     X_train, y_train = CreateTrainingData()
-    DC_model = CreateModel(X_train, y_train)
-    DC_model.save(MODELS_DIR + "/DC_IMSZ200_BSZ64_EP5")
+    DC_model = CreateModel(X_train, y_train, ACTIVATION, OPTIMIZER, BATCH_SIZE, EPOCHS, VALIDATION_SPLIT)
+    DC_model.save(MODELS_DIR + "/DC_INCREASING_IMSZ-" + str(IMG_SIZE) + "_ACT-" + str(ACTIVATION) + "_BSZ-" + str(BATCH_SIZE) + "_EP-" + str(EPOCHS) + "_VALSPLT-" + str(VALIDATION_SPLIT))
 
     #DC_model = keras.models.load_model(MODELS_DIR + "/DogsVsCats.model")
-    X_test = CreateTestingData()
-    predictions = DC_model.predict(X_test)
-    print("X.shape = ", X_test.shape)
-    print("predictions.shape = ", predictions.shape)
-    print("predictions =\n", predictions)
+    #X_test = CreateTestingData()
+    #predictions = DC_model.predict(X_test)
+    #print("X.shape = ", X_test.shape)
+    #print("predictions.shape = ", predictions.shape)
+    #print("predictions =\n", predictions)
 
-    plt.imshow(X_test[0], cmap = "gray")
-    plt.show()
-    print("Prediction = ", predictions[0])
+    #plt.imshow(X_test[0], cmap = "gray")
+    #plt.show()
+    #print("Prediction = ", predictions[0])
 
 
 def CreateTrainingData():
@@ -80,28 +86,32 @@ def PickleData(X):
     pickle.dump(X, pickle_out)
     pickle_out.close()
 
-def CreateModel(X, y):
+def CreateModel(X, y, act, opt, batsz, ep, valSplit):
 
     model = Sequential()
-    model.add(Conv2D(64, (3,3), input_shape= X.shape[1:]))
-    model.add(Activation("relu"))
+    model.add(Conv2D(32, (3,3), input_shape= X.shape[1:]))
+    model.add(Activation(act))
     model.add(MaxPooling2D(pool_size=(2,2)))
 
     model.add(Conv2D(64, (3,3)))
-    model.add(Activation("relu"))
+    model.add(Activation(act))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+
+    model.add(Conv2D(128, (3,3)))
+    model.add(Activation(act))
     model.add(MaxPooling2D(pool_size=(2,2)))
 
     model.add(Flatten())
-    model.add(Dense(64))
+    model.add(Dense(128))
 
     model.add(Dense(1))
-    model.add(Activation('sigmoid'))
+    model.add(Activation("sigmoid"))
 
     model.compile(loss="binary_crossentropy",
-                  optimizer="adam",
+                  optimizer=opt,
                   metrics=['accuracy'])
 
-    model.fit(X, y, batch_size=64, epochs=5, validation_split=0.1)
+    model.fit(X, y, batch_size=batsz, epochs=ep, validation_split=valSplit)
     return model
 
 
